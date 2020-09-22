@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Promodo clock</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Alata&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      class App extends React.Component{
+        constructor(props){
+        super(props)
+        this.state={
+        break:5, 
+        session:25,
+        dminutes:25,
+        seconds:0,
+        play:false,
+        breaked:false
+        }
+        this.getTime = this.getTime.bind(this)
+        this.tick = this.tick.bind(this)
+        this.toggle = this.toggle.bind(this)
+        this.breakDecrement = this.breakDecrement.bind(this)
+        this.breakIncrement = this.breakIncrement.bind(this)
+        this.sessionDecrement = this.sessionDecrement.bind(this)
+        this.sessionIncrement = this.sessionIncrement.bind(this)
+        this.reset = this.reset.bind(this)
+       }
+
+        componentDidMount(){
+          setInterval(this.tick,1000)
+        }
+        tick()
+        {
+        if(this.state.play)
+          {
+            
+            if(!this.state.breaked)
+              {
+                
+                if(this.state.seconds === 0)
+                    {
+                        if(this.state.dminutes ===0)
+                          {
+                            
+                              this.setState(state=>({
+                                breaked:true,
+                                seconds:0,
+                                dminutes:state.break
+                              }))
+                            
+                            return;
+                          }
+                        else
+                          {
+                            this.setState(state=>({
+                                dminutes : state.dminutes -1,
+                                seconds:60
+                            }))
+                          }
+                    }
+                    this.setState(state=>({
+              seconds : state.seconds -1
+            }))
+              }
+            else
+              {
+                  if(this.state.seconds === 0)
+                    {
+                        if(this.state.dminutes ===0)
+                          {
+                            
+                              this.setState(state=>({
+                                breaked:false,
+                                seconds:0,
+                                dminutes:state.session
+                                
+                              }))
+                              
+                              return;
+                          }
+                        else
+                          {
+                            this.setState(state=>({
+                                dminutes : state.dminutes -1,
+                                seconds:60
+                            }))
+                          }
+                    }
+                this.setState(state=>({
+              seconds : state.seconds -1
+            }))
+              }
+          }
+        }
+      
+        getTime()
+        {
+        let min = this.state.dminutes;
+        let sec= this.state.seconds;
+        if(min<10){
+          min = "0" + min
+        }
+        if(sec <10){
+          sec = "0" + sec
+        }
+          if(min+":"+sec ==="00:00"){
+            this.playSound();
+          }
+        return min+":"+sec
+        }
+        sessionIncrement(){
+          if(!this.state.play){
+            if(this.state.session<60){
+              if(!this.state.breaked){
+                this.setState(state=>({
+                  session: state.session +1,
+                  dminutes: state.session +1,
+                  seconds:0
+                }))
+            }
+            else{
+                this.setState(state=>({
+                  session: state.session +1,
+                }))
+            }
+            }
+          }
+        }
+        
+        sessionDecrement(){
+          if(!this.state.play){
+            if(this.state.session>1){
+              if(!this.state.breaked){
+                this.setState(state=>({
+                  session: state.session -1,
+                  dminutes: state.session -1,
+                  seconds:0
+                }))
+            }
+            else{
+                this.setState(state=>({
+                  session: state.session -1,
+                }))
+            }
+            }
+          }
+        }
+        
+        breakIncrement(){
+          if(!this.state.play){
+            if(this.state.break<60){
+              if(this.state.breaked){
+                this.setState(state=>({
+                  break: state.break +1,
+                  dminutes: state.break +1,
+                  seconds:0
+                }))
+            }
+            else{
+                this.setState(state=>({
+                  break: state.break +1,
+                }))
+            }
+            }
+          }
+        }
+        
+        breakDecrement(){
+            if(!this.state.play){
+            if(this.state.break>1){
+              if(this.state.breaked){
+                this.setState(state=>({
+                  break: state.break-1,
+                  dminutes: state.break -1,
+                  seconds:0
+                }))
+            }
+            else{
+                this.setState(state=>({
+                  break: state.break -1,
+                }))
+            }
+            }
+          }
+        }
+
+        toggle()
+        {
+          this.setState(state=>({
+            play : !state.play
+          }))
+        }
+
+        reset(){
+          if(this.audio){
+            this.audio.pause()
+            this.audio.currentTime = 0;
+          }
+          this.setState(state=>({
+            session:25,
+            break:5,
+            dminutes:25,
+            seconds:0,
+            play:false,
+            breaked:false
+          }))
+        }
+        
+        playSound(){
+          this.audio = document.getElementById("beep");
+          this.audio.play();
+        }
+
+        render(){
+
+      return (
+      <div id ="container">
+      <h1 id="header">Promodo clock</h1>
+      <div id="break-label">
+      <p style ={{width:"100%",textAlign:"center"}}>Break Length</p>
+      <button id="break-decrement" className = "but" onClick={this.breakDecrement}>-</button>
+      <p id ="break-length">{this.state.break}</p>
+      <button id="break-increment" className = "but" onClick={this.breakIncrement}>+</button>
+      </div>
+      <div id="session-label">
+      <p style ={{width:"100%",textAlign:"center"}}>Session Length</p>
+      <button id="session-decrement" className = "but" onClick={this.sessionDecrement}>-</button>
+      <p id ="session-length">{this.state.session}</p>
+      <button id="session-increment" className = "but" onClick={this.sessionIncrement}>+</button>
+      </div>
+      <div id="timer-label">
+      <p>{this.state.breaked ? "Break" : "Session"}</p>
+        <p id ="time-left">{" " + this.getTime()}</p>
+      </div>
+      <div id= "buttons">
+        <button id="start_stop" className = "but" onClick={this.toggle}>Play/Stop</button>
+        <button id="reset" className = "but" onClick={this.reset}>Reset</button>
+      </div>
+      <audio id="beep" src ="https://s3.amazonaws.com/freecodecamp/drums/Chord_1.mp3"></audio>
+      </div>
+      )
+      }
+    }
+
+    ReactDOM.render(
+    <App/>,
+    document.getElementById('root')
+    );
+    </script>
+  </body>
+</html>
